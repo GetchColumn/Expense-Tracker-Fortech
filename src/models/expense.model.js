@@ -10,7 +10,7 @@ Expense.init(
             autoIncrement: true,
             primaryKey: true,
         },
-        amount: {
+        sum: {
             type: DataTypes.STRING,
             allowNull: false,
             unique: false,
