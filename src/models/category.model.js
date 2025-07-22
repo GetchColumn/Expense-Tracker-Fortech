@@ -19,7 +19,6 @@ Category.init(
     {
         sequelize,
         modelName: 'categories',
-        // "мягкое" удаление
         paranoid: true,
     },
 );

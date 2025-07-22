@@ -29,7 +29,6 @@ Expense.init(
     {
         sequelize,
         modelName: 'expenses',
-        // "мягкое" удаление
         paranoid: true,
     },
 );

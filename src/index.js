@@ -14,34 +14,54 @@ app.use(express.json());
 app.get('/api/expense', async (req, res) => {
     try {
         const result = await Expense.findAll();
-        res.status(200).send({
-            data: result,
-        });
+
+        return res.status(200).send(result);
+
     } catch (error) {
-        console.error("Ошибка get: ", error);
-        res.status(500).send({ message: "Internal server error" });
+        console.error(error);
+        return res.status(503).send({ error: "Database temporarily unavailable" });
     }
 });
+
+
 
 // добавление расходов
-app.post('/api/expense', query('sum', 'cat', 'description').notEmpty(), (req, res) => {
-    const valid = validationResult(req);
+app.post('/api/expense', body('sum', 'category', 'description').notEmpty(),
+    async (req, res) => {
+        const valid = validationResult(req);
 
-    if (valid.isEmpty()) {
-        const { sum, cat, description } = req.body;
-        // post logic
-        return res.status(200).send({
-            message: 'post ok'
-        });
-    }
+        if (valid.isEmpty()) {
+            const { sum: sum, category, description } = req.body;
+            let categoryObject = null;
 
-    res.send({ errors: valid.array() });
-});
+            try {
 
-// частичное обновление расходов
-app.patch("/api/expense", async (req, res) => {
-    res.status(200).send({});
-});
+                categoryObject = await Category.findOne({ where: { name: category } });
+
+                if (categoryObject === null) {
+                    return res.status(400).send({ message: "The specified category don't exist" });
+                }
+
+                const categoryId = categoryObject.id;
+                const newExpense = await Expense.create({ sum, categoryId, description });
+
+                return res.send(newExpense);
+
+            } catch (error) {
+                console.error(error);
+
+                if (error.name === 'SequelizeConnectionError' || error.code === 'ECONNREFUSED') {
+                    return res.status(503).send({ error: 'Database temporarily unavailable' });
+                }
+
+                return res.status(500).send({ error: "Unexpected error" });
+            }
+        }
+
+        res.send({ errors: valid.array() });
+    });
+
+
 
 ///////////////////////////////////////////////////////
 
@@ -49,11 +69,13 @@ app.patch("/api/expense", async (req, res) => {
 app.get('/api/category', async (req, res) => {
     try {
 
-        res.send(await Category.findAll());
+        const allCategories = await Category.findAll()
+
+        res.send(allCategories);
 
     } catch (error) {
         console.error(error);
-        res.status(500).send(error);
+        return res.status(503).send({ error: "Database temporarily unavailable" });
     }
 });
 
@@ -72,7 +94,7 @@ app.get('/api/category/:id', param('id').notEmpty().withMessage("Category id can
 
         } catch (error) {
             console.error(error);
-            res.status(500).send(error);
+            return res.status(503).send({ error: "Database temporarily unavailable" });
         }
     });
 
@@ -91,7 +113,16 @@ app.post('/api/category', body('name').trim().notEmpty().withMessage("Category n
                 return res.send(result);
             } catch (error) {
                 console.error(error);
-                return res.status(500).send(error);
+
+                if (error.name === 'SequelizeConnectionError' || error.code === 'ECONNREFUSED') {
+                    return res.status(503).send({ error: 'Database temporarily unavailable' });
+                }
+
+                if (error.name === 'SequelizeUniqueConstraintError') {
+                    return res.status(409).send({ error: 'Category name already exists' });
+                }
+
+                return res.status(500).send({ error: "Unexpected error" });
             }
         }
         res.status(400).send({ errors: valid.array() });
@@ -121,7 +152,16 @@ app.put("/api/category", query('name').trim().notEmpty().withMessage("Category n
 
             } catch (error) {
                 console.error(error);
-                return res.status(500).send(error);
+
+                if (error.name === 'SequelizeConnectionError' || error.code === 'ECONNREFUSED') {
+                    return res.status(503).send({ error: 'Database temporarily unavailable' });
+                }
+
+                if (error.name === 'SequelizeUniqueConstraintError') {
+                    return res.status(409).send({ error: 'Category name already exists' });
+                }
+
+                return res.status(500).send({ error: "Unexpected error" });
             }
         }
         res.status(400).send({ errors: valid.array() });
@@ -149,7 +189,12 @@ app.delete("/api/category", body('name').trim().notEmpty().withMessage("Category
 
             } catch (error) {
                 console.error(error);
-                return res.status(500).send(error);
+
+                if (error.name === 'SequelizeConnectionError' || error.code === 'ECONNREFUSED') {
+                    return res.status(503).send({ error: 'Database temporarily unavailable' });
+                }
+
+                return res.status(500).send({ error: "Unexpected error" });
             }
         }
 
@@ -159,7 +204,7 @@ app.delete("/api/category", body('name').trim().notEmpty().withMessage("Category
 
 try {
     await sequelize.authenticate();
-    await sequelize.sync({ force: false })
+    await sequelize.sync({ force: true })
     app.listen(PORT, () =>
         console.log(`It's alive on http://localhost:${PORT}`),
     );
