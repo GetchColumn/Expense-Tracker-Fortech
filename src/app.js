@@ -15,7 +15,7 @@ app.use('/', mainRouter);
 
 try {
   await sequelize.authenticate();
-  await sequelize.sync({ force: true })
+  await sequelize.sync({ force: false })
   app.listen(PORT, () =>
     console.log(`It's alive on http://localhost:${PORT}`),
   );
