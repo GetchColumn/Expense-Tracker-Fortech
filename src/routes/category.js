@@ -5,6 +5,7 @@ import { Category } from '../models/index.js';
 import { validateRequestSchema } from '../middleware/validate-request-schema.js';
 import { categorySchema } from '../middleware/category-schema.js';
 import { categoryPutSchema } from '../middleware/category-put-schema.js';
+import { categoryDeleteSchema } from '../middleware/category-delete-schema.js';
 
 import { CategoryController } from '../controllers/categoryController.js'
 
@@ -16,8 +17,8 @@ router.get('/:id', CategoryController.getCategoryById);
 
 router.post('/', categorySchema, CategoryController.createCategory);
 
-router.put("/", categoryPutSchema, validateRequestSchema, CategoryController.updateFullCategory);
+router.put("/", categoryPutSchema, CategoryController.updateFullCategory);
 
-router.delete("/", categorySchema, validateRequestSchema, CategoryController.deleteCategory);
+router.delete("/", categoryDeleteSchema, CategoryController.deleteCategory);
 
 export { router as categoryRoute }
