@@ -3,22 +3,19 @@ import express from 'express';
 import { Category } from '../models/category.model.js';
 
 import { validateRequestSchema } from '../middleware/validate-request-schema.js';
-import { categoryPostSchema } from '../schema/category-post-schema.js';
-import { categoryPutSchema } from '../schema/category-put-schema.js';
-import { categoryDeleteSchema } from '../schema/category-delete-schema.js';
+import { categorySchema } from '../middleware/category-schema.js';
+import { categoryPutSchema } from '../middleware/category-put-schema.js';
+
+import { CategoryController } from '../controllers/categoryController.js'
 
 const router = express.Router();
 
 // получение списка всех категорий
-router.get('/category', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
 
     const allCategories = await Category.findAll()
 
-    if (allCategories.length === 0) {
-      return res.status(404).send({ message: "Not found" });
-    }
-    
     res.send(allCategories);
 
   } catch (error) {
@@ -28,13 +25,15 @@ router.get('/category', async (req, res) => {
 });
 
 // получение категории по id
-router.get('/category/:id',
+router.get('/:id',
   async (req, res) => {
     try {
       const { id } = req.params;
       const categoryById = await Category.findByPk(id);
 
       if (categoryById === null) {
+
+        // throw
         return res.status(404).send({ message: "Not found" });
       }
 
@@ -42,12 +41,12 @@ router.get('/category/:id',
 
     } catch (error) {
       console.error(error);
-      return res.status(503).send({ error: "Database temporarily unavailable" });
+      return res.status(400).send({ error: "Unable to get catedory" });
     }
   });
 
 // добавление новой категории
-router.post('/category', categoryPostSchema, validateRequestSchema,
+router.post('/', categorySchema,
   async (req, res) => {
 
     const { name } = req.body;
@@ -67,13 +66,13 @@ router.post('/category', categoryPostSchema, validateRequestSchema,
         return res.status(409).send({ error: 'Category name already exists' });
       }
 
-      return res.status(500).send({ error: "Unexpected error" });
+      return res.status(400).send({ error: "Unable to create new entry" });
     }
 
   });
 
 // полное обновление категории
-router.put("/category", categoryPutSchema, validateRequestSchema,
+router.put("/", categoryPutSchema, validateRequestSchema,
   async (req, res) => {
 
     const { name } = req.query;
@@ -100,14 +99,14 @@ router.put("/category", categoryPutSchema, validateRequestSchema,
         return res.status(409).send({ error: 'Category name already exists' });
       }
 
-      return res.status(500).send({ error: "Unexpected error" });
+      return res.status(400).send({ error: "Unable to update entry" });
     }
 
   });
 
 
 // удаление (мягкое) категории
-router.delete("/category", categoryDeleteSchema, validateRequestSchema,
+router.delete("/", categorySchema, validateRequestSchema,
   async (req, res) => {
 
     const { name } = req.body;
@@ -129,7 +128,7 @@ router.delete("/category", categoryDeleteSchema, validateRequestSchema,
         return res.status(503).send({ error: 'Database temporarily unavailable' });
       }
 
-      return res.status(500).send({ error: "Unexpected error" });
+      return res.status(400).send({ error: "Unable to delete entry" });
     }
 
   });

@@ -3,6 +3,10 @@ import { body, param, query, validationResult } from 'express-validator';
 
 import { Expense } from '../models/expense.model.js';
 import { Category } from '../models/category.model.js';
+import { expenseGetByCategory } from '../middleware/expense-get-by-category.js';
+import { validateRequestSchema } from '../middleware/validate-request-schema.js';
+
+import { ExpenseController } from '../controllers/expenseController.js'
 
 const router = express.Router();
 
@@ -19,18 +23,38 @@ router.get('/expense', async (req, res) => {
   }
 });
 
-// !!! получение расходов по выбранной категории
-router.get('/expense', async (req, res) => {
-  try {
-    const allExpenses = await Expense.findAll();
+// получение расходов по выбранной категории
+router.get('/expense/by-category', expenseGetByCategory, validateRequestSchema,
+  async (req, res) => {
+    try {
+      const categoryName = req.query.category;
 
-    return res.status(200).send(allExpenses);
+      const fetchedCategory = await Category.findOne({ where: { name: categoryName } })
 
-  } catch (error) {
-    console.error(error);
-    return res.status(500).send(error);
-  }
-});
+      if (fetchedCategory === null) {
+        return res.status(404).send({ message: "Category not found" });
+      }
+
+      const categoryId = fetchedCategory.id;
+
+      const fetchedExpense = await Expense.findAll({ where: { categoryId: categoryId } });
+
+      if (fetchedExpense === null) {
+        return res.status(404).send({ message: "Expense not found" });
+      }
+
+      return res.status(200).send(fetchedExpense);
+
+    } catch (error) {
+      console.error(error);
+
+      if (error.name === 'SequelizeConnectionError' || error.code === 'ECONNREFUSED') {
+        return res.status(503).send({ error: 'Database temporarily unavailable' });
+      }
+
+      return res.status(500).send({ error: "Unexpected error" });
+    }
+  });
 
 // добавление расходов
 router.post('/expense', body('sum', 'category', 'description').notEmpty(),
