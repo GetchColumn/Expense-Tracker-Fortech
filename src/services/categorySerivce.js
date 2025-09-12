@@ -4,15 +4,15 @@ export class CategoryService {
 
   static async getCategory(id) {
     try {
-      let categoryToSend;
+      let categoryToGet;
 
       if (id === undefined) {
-        categoryToSend = await Category.findAll()
+        categoryToGet = await Category.findAll()
       } else {
-        categoryToSend = await Category.findByPk(id);
+        categoryToGet = await Category.findByPk(id);
       }
 
-      return { error: null, data: categoryToSend }
+      return { error: null, data: categoryToGet }
     }
     catch (err) {
       console.error(err);
