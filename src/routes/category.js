@@ -1,8 +1,5 @@
 import express from 'express';
 
-import { Category } from '../models/index.js';
-
-import { validateRequestSchema } from '../middleware/validate-request-schema.js';
 import { categorySchema } from '../middleware/category-schema.js';
 import { categoryPutSchema } from '../middleware/category-put-schema.js';
 import { categoryDeleteSchema } from '../middleware/category-delete-schema.js';
