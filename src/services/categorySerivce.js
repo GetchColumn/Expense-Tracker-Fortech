@@ -2,7 +2,7 @@ import { Category } from '../models/index.js';
 
 export class CategoryService {
 
-  static async getCategory(id) {
+  static async get(id) {
     try {
       let categoryToGet;
 
@@ -21,7 +21,7 @@ export class CategoryService {
     }
   }
 
-  static async createCategory(name) {
+  static async create(name) {
     try {
 
       const newCategory = await Category.create({ name });
@@ -35,7 +35,7 @@ export class CategoryService {
     }
   }
 
-  static async getCategoryByName(name) {
+  static async getByName(name) {
     try {
 
       const categoryByName = await Category.findOne({ where: { name: name } });
@@ -50,7 +50,7 @@ export class CategoryService {
 
   }
 
-  static async updateCategory(name, newName) {
+  static async update(name, newName) {
     try {
 
       const categoryToUpdate = await Category.findOne({ where: { name: name } });
@@ -70,7 +70,7 @@ export class CategoryService {
     }
   }
 
-  static async deleteCategory(name) {
+  static async delete(name) {
     try {
 
       const categoryToDelete = await Category.findOne({ where: { name: name } });

@@ -5,7 +5,7 @@ export class CategoryController {
   static async getAllCategory(req, res) {
     try {
 
-      const { err, data: allCategories } = await CategoryService.getCategory();
+      const { err, data: allCategories } = await CategoryService.get();
 
       if (err) {
         throw new Error(err);
@@ -33,7 +33,7 @@ export class CategoryController {
     try {
       const { id } = req.params;
 
-      const { err, data: categoryById } = await CategoryService.getCategory(id);
+      const { err, data: categoryById } = await CategoryService.get(id);
 
       if (err) {
         throw new Error(err);
@@ -65,7 +65,7 @@ export class CategoryController {
     try {
       const { name } = req.body;
 
-      const { err, data: newCategory } = await CategoryService.createCategory(name);
+      const { err, data: newCategory } = await CategoryService.create(name);
 
       if (err) {
         throw new Error(err);
@@ -99,7 +99,7 @@ export class CategoryController {
       const { name } = req.query;
       const { newName } = req.body;
 
-      const { err, data: updatedCategory } = await CategoryService.updateCategory(name, newName);
+      const { err, data: updatedCategory } = await CategoryService.update(name, newName);
 
       if (err) {
         throw new Error(err);
@@ -127,7 +127,7 @@ export class CategoryController {
     try {
       const { name } = req.query;
 
-      const { err, data: categoryToDelete } = await CategoryService.deleteCategory(name);
+      const { err, data: categoryToDelete } = await CategoryService.delete(name);
 
       if (err) {
         throw new Error(err);
