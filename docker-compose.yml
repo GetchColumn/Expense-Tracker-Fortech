@@ -1,0 +1,33 @@
+services:
+  db:
+    container_name: db_expense_tracker
+    command: ['postgres', '-c', 'log_statement=all']
+    image: postgres:14
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+        - db-data:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: pg_admin
+    image: dpage/pgadmin4:8.9
+    environment:
+       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+    ports:
+        - '7777:80'
+    volumes:
+       - pgadmin_volume:/var/lib/pgadmin
+volumes:
+  db-data:
+  pgadmin_volume:

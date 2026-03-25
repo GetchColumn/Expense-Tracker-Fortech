@@ -1,0 +1,21 @@
+import express from 'express';
+
+import { categorySchema } from '../middleware/category-schema.js';
+import { categoryPutSchema } from '../middleware/category-put-schema.js';
+import { categoryDeleteSchema } from '../middleware/category-delete-schema.js';
+
+import { CategoryController } from '../controllers/categoryController.js'
+
+const router = express.Router();
+
+router.get('/', CategoryController.getAllCategory);
+
+router.get('/:id', CategoryController.getCategoryById);
+
+router.post('/', categorySchema, CategoryController.createCategory);
+
+router.put("/", categoryPutSchema, CategoryController.updateFullCategory);
+
+router.delete("/", categoryDeleteSchema, CategoryController.deleteCategory);
+
+export { router as categoryRoute }
